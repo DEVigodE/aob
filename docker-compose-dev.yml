@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-aob
+    environment:
+      POSTGRES_DB: aob
+      POSTGRES_USER: aob
+      POSTGRES_PASSWORD: aob@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - aob-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.2
+    container_name: keycloak-aob
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin@123
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/aob
+      KC_DB_USERNAME: aob
+      KC_DB_PASSWORD: aob@123
+    volumes:
+      - ./keycloak/realm-aob.json:/opt/keycloak/data/import/realm-aob.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - aob-net
+
+volumes:
+  postgres_data:
+
+networks:
+  aob-net:
+    driver: bridge
